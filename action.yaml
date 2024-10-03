@@ -1,0 +1,34 @@
+---
+name: "Aptly deb repo creator"
+author: "Jinna Kiisuo <jinnak@nocturnal.fi>"
+description: |
+  Create ad-hoc deb repositories into GitHub artifacts.
+  These can be published onwards into GitHub Pages.
+
+inputs:
+  repository:
+    description: "Repository to create"
+    required: true
+    default: "debian"
+  archs:
+    description: "Architectures to enable, comma separated. e.g. amd64,arm64"
+    required: true
+    default: "amd64"
+  GITHUB_TOKEN:
+    description: |
+      A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Add this action's path to PATH
+      shell: bash
+      run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+    - name: Install Aptly
+      uses: eth-pkg/apt-deb-cache@v0.2.6
+      with:
+        packages: "aptly"
+    - name: Create repository
+      shell: bash
+      run: "aptly create -architectures='${{ inputs.archs }}' ${{ inputs.repository }}"
