@@ -39,6 +39,14 @@ inputs:
     description: |
       A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
     default: ${{ github.token }}
+  GPG_PRIVATE_KEY:
+    description: Armored gpg private key to sign the repo with.
+    required: true
+    default: "${{ secrets.GPG_PRIVATE_KEY }}"
+  PASSPHRASE:
+    description: The passphrase of the provided GPG key.
+    required: true
+    default: "${{ secrets.PASSPHRASE }}"
 
 runs:
   using: composite
@@ -59,12 +67,12 @@ runs:
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:
-        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.PASSPHRASE }}
+        gpg_private_key: "${{ inputs.GPG_PRIVATE_KEY }}"
+        passphrase: "${{ inputs.PASSPHRASE }}"
     - name: Sign & publish repo
       shell: bash
       run: |
         aptly publish repo \
           -distribution "${{ input.distribution }}" \
           -component "${{ input.component }}" \
-          "${{ input.repository }}"
+          "${{ inputs.repository }}"
