@@ -7,9 +7,17 @@ description: |
 
 inputs:
   repository:
-    description: "Repository to create"
+    description: "Repository name to create."
     required: true
     default: "debian"
+  distribution:
+    description: "Distro the repo will target."
+    required: true
+    default: "debian"
+  component:
+    description: "Component name, for example stable or dev."
+    required: true
+    default: "stable"
   archs:
     description: |
       Architectures to enable, comma separated. e.g. amd64,arm64
@@ -20,6 +28,13 @@ inputs:
       Filesystem glob of debs or directories of debs to add to the repo.
     required: true
     default: "./"
+  gpg_key_id:
+    description: |
+      ID of the GPG public key to use for signing.
+      Useful for definining a signing specific subkey.
+    required: true
+    default: ""
+
   GITHUB_TOKEN:
     description: |
       A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
@@ -41,3 +56,15 @@ runs:
     - name: Add debs
       shell: bash
       run: "aptly repo add ${{ inputs.repository }} ${{ inputs.glob }}"
+    - name: Import GPG key
+      uses: crazy-max/ghaction-import-gpg@v6
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+    - name: Sign & publish repo
+      shell: bash
+      run: |
+        aptly publish repo \
+          -distribution "${{ input.distribution }}" \
+          -component "${{ input.component }}" \
+          "${{ input.repository }}"
