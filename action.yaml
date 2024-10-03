@@ -19,7 +19,7 @@ inputs:
     description: |
       Filesystem glob of debs or directories of debs to add to the repo.
     required: true
-    default: "."
+    default: "./"
   GITHUB_TOKEN:
     description: |
       A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
@@ -40,4 +40,4 @@ runs:
       run: "aptly repo create -architectures='${{ inputs.archs }}' ${{ inputs.repository }}"
     - name: Add debs
       shell: bash
-      run: "aptly repo add ${{ inputs.glob }}"
+      run: "aptly repo add ${{ inputs.repository }} ${{ inputs.glob }}"
