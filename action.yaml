@@ -55,6 +55,11 @@ runs:
     - name: Install XSV
       shell: bash
       run: ubi -p BurntSushi/xsv
+    - name: Check tool path
+      shell: bash
+      run: |
+        echo "$PATH"
+        ls "$HOME/bin/"
     - name: Create repository
       shell: bash
       run: |

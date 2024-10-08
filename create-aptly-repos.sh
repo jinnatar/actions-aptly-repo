@@ -2,9 +2,6 @@
 
 set -eu
 
-echo "$PATH"
-ls ~/bin/
-
 project="${1?}"
 
 readarray -t csv
