@@ -54,7 +54,7 @@ runs:
             sh
     - name: Install XSV
       shell: bash
-      run: ubi -p BurntSushi/xsv
+      run: ubi -p BurntSushi/xsv -i "$HOME/bin/"
     - name: Check tool path
       shell: bash
       run: |
