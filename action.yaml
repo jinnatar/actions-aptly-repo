@@ -42,7 +42,7 @@ runs:
     - name: Create repository
       shell: bash
       run: |
-        echo "${{ inputs.repos }}" | scripts/create-aptly-repos.sh
+        echo "${{ inputs.repos }}" | create-aptly-repos.sh
     - name: Add debs
       shell: bash
       run: "aptly repo add ${{ inputs.repository }} ${{ inputs.glob }}"
