@@ -6,6 +6,10 @@ description: |
   These can be published onwards into GitHub Pages.
 
 inputs:
+  name:
+    description: |
+      "Short name of the project used as a slug to refer to your repo."
+    required: true
   repos:
     description: |
       "Repositories to create. Provided as a semicolon separated csv."
@@ -54,7 +58,7 @@ runs:
     - name: Create repository
       shell: bash
       run: |
-        echo "${{ inputs.repos }}" | create-aptly-repos.sh
+        echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}"
     - name: Add debs
       shell: bash
       run: "aptly repo add ${{ inputs.repository }} ${{ inputs.glob }}"
