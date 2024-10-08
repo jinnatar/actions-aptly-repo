@@ -6,45 +6,28 @@ description: |
   These can be published onwards into GitHub Pages.
 
 inputs:
-  repository:
-    description: "Repository name to create."
-    required: true
-    default: "debian"
-  distribution:
-    description: "Distro the repo will target."
-    required: true
-    default: "debian"
-  component:
-    description: "Component name, for example stable or dev."
-    required: true
-    default: "stable"
-  archs:
+  repos:
     description: |
-      Architectures to enable, comma separated. e.g. amd64,arm64
+      "Repositories to create. Provided as a semicolon separated csv."
     required: true
-    default: "amd64"
-  glob:
-    description: |
-      Filesystem glob of debs or directories of debs to add to the repo.
-    required: true
-    default: "./"
+    default: "debian;stable;amd64;./*.deb"
   gpg_key_id:
     description: |
       ID of the GPG public key to use for signing.
       Useful for definining a signing specific subkey.
     required: true
     default: ""
+  gpg_private_key:
+    description: Armored gpg private key to sign the repo with.
+    required: true
+  gpg_passphrase:
+    description: The passphrase of the provided GPG key.
+    required: true
 
   GITHUB_TOKEN:
     description: |
       A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
     default: ${{ github.token }}
-  gpg_private_key:
-    description: Armored gpg private key to sign the repo with.
-    required: true
-  passphrase:
-    description: The passphrase of the provided GPG key.
-    required: true
 
 runs:
   using: composite
@@ -58,7 +41,8 @@ runs:
         packages: "aptly"
     - name: Create repository
       shell: bash
-      run: "aptly repo create -architectures='${{ inputs.archs }}' ${{ inputs.repository }}"
+      run: |
+        scripts/create-aptly-repos.sh < ${{ inputs.repos }}
     - name: Add debs
       shell: bash
       run: "aptly repo add ${{ inputs.repository }} ${{ inputs.glob }}"
