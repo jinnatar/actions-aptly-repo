@@ -50,7 +50,7 @@ runs:
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: "${{ inputs.gpg_private_key }}"
-        passphrase: "${{ inputs.passphrase }}"
+        passphrase: "${{ inputs.gpg_passphrase }}"
     - name: Sign & publish repo
       shell: bash
       run: |
