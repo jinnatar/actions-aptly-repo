@@ -10,6 +10,12 @@ inputs:
     description: |
       "Short name of the project used as a slug to refer to your repo."
     required: true
+  prefix:
+    description: |
+      Repo prefix in the published structure.
+      Relevant if publishing to multiple distros as they can't mix.
+    required: true
+    default: "."
   repos:
     description: |
       "Repositories to create. Provided as a semicolon separated csv."
@@ -63,7 +69,7 @@ runs:
     - name: Create repository
       shell: bash
       run: |
-        echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}"
+        echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
     - name: Admire results
       shell: bash
       run: |

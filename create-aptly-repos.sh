@@ -3,6 +3,7 @@
 set -eu
 
 project="${1?}"
+prefix="${2?}"
 
 readarray -t csv
 
@@ -33,11 +34,12 @@ for reporaw in "${csv[@]}"; do
 	set +x
 done
 
+#TODO: All of this needs to detect data from the csv instead
+set +x
 for distribution in bookworm noble; do
 	aptly publish repo \
 		-component=, \
 		-distribution="${distribution}" \
-		${project}-${distribution}-{stable,nightly}
+		${project}-${distribution}-{stable,nightly} \
+		"${prefix}"
 done
-
-tree ~/.aptly/public
