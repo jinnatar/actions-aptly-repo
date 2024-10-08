@@ -39,6 +39,15 @@ runs:
       uses: eth-pkg/apt-deb-cache@v0.2.6
       with:
         packages: "aptly"
+    - name: Install UBI
+      shell: bash
+      run: |
+        curl --silent --location \
+            https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh |
+            sh
+    - name: Install XSV
+      shell: bash
+      run: ubi -p BurntSushi/xsv -i ./
     - name: Create repository
       shell: bash
       run: |
