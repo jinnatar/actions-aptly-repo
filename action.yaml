@@ -32,9 +32,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Add this action's path to PATH
+    - name: Fix up PATH
       shell: bash
-      run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      run: |
+          mkdir "${HOME}/bin"
+          echo "${HOME}/bin" >> $GITHUB_PATH
+          echo "${{ github.action_path }}" >> $GITHUB_PATH
     - name: Install Aptly
       uses: eth-pkg/apt-deb-cache@v0.2.6
       with:
@@ -47,7 +50,7 @@ runs:
             sh
     - name: Install XSV
       shell: bash
-      run: ubi -p BurntSushi/xsv -i ./
+      run: ubi -p BurntSushi/xsv
     - name: Create repository
       shell: bash
       run: |
