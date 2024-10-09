@@ -49,9 +49,14 @@ runs:
           echo "${HOME}/bin" >> $GITHUB_PATH
           echo "${{ github.action_path }}" >> $GITHUB_PATH
     - name: Install Aptly
-      uses: eth-pkg/apt-deb-cache@v0.2.6
+      uses: myci-actions/add-deb-repo@11
       with:
-        packages: "aptly"
+        # TODO: Swap out ci prefix for release once Aptly 1.6.0 is published:
+        # https://github.com/aptly-dev/aptly/discussions/1345
+        repo: deb http://repo.aptly.info/ci noble main
+        repo-name: aptly
+        keys-asc: http://repo.aptly.info/pubkey.txt
+        install: aptly
     - name: Install UBI
       shell: bash
       run: |

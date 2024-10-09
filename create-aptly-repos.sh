@@ -53,7 +53,7 @@ for repoline in "${csv[@]}"; do
 	set +x
 done
 
-## Publish repos
+## Publish repos per distribution
 distros=($(printf -- '%s\n' "${csv[@]}" | xsv input -d \; | xsv select 1 | sort -u | xargs))
 >&2 echo "Publishing distros: ${distros[@]}"
 for distribution in ${distros[@]}; do
@@ -67,6 +67,7 @@ for distribution in ${distros[@]}; do
 
 	set -x
 	aptly publish repo \
+		-multi-dist \
 		-component="${components::-1}" \
 		-distribution="${distribution}" \
 		"${repos[@]}" \
