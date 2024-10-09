@@ -86,5 +86,5 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: "${{ inputs.name }}-${{inputs.prefix}}-repo-artifacts"
-        path: "$HOME/.aptly/public"
+        path: "${{ HOME }}/.aptly/public"
         if-no-files-found: error
