@@ -1,9 +1,6 @@
 # <!--name-->Aptly deb repo creator<!--/name-->
 <!--description-->
-Create APT compatible debian repositories into GitHub artifacts.
-The current v1 supports stateless repos, i.e. where the contents of
-the run create a blank slate every time. The intent is to build upon
-this for an "import & extend" workflow that allows preserving state.
+Create APT compatible debian repositories into GitHub artifacts with Aptly.
 <!--/description-->
 
 ## Inputs
