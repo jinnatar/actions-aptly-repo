@@ -36,10 +36,10 @@ done
 >&2 echo "Creating repos:"
 echo "# Repo config line examples" > "${project}.list"
 for repoline in "${csv[@]}"; do
-	distribution=$(echo "$repoline" | xsv input -d \; | xsv select 1)
-	component=$(echo "$repoline" | xsv input -d \; | xsv select 2)
-	archs=$(echo "$repoline" | xsv input -d \; | xsv select 3 | tr -d \")
-	debglob=$(echo "$repoline" | xsv input -d \; | xsv select 4)
+	distribution=$(echo "$repoline" | xsv select 1)
+	component=$(echo "$repoline" | xsv select 2)
+	archs=$(echo "$repoline" | xsv select 3 | tr -d \")
+	debglob=$(echo "$repoline" | xsv select 4)
 	slug="${project}-${distribution}-${component}"
 
 	echo "deb [arch=${archs} signed-by=/etc/apt/trusted.gpg.d/${project}.gpg] https://repo.example.com/${prefix} ${distribution} ${component}" | tee -a "${project}.list"
@@ -54,10 +54,10 @@ for repoline in "${csv[@]}"; do
 done
 
 ## Publish repos per distribution
-distros=($(printf -- '%s\n' "${csv[@]}" | xsv input -d \; | xsv select 1 | sort -u | xargs))
+distros=($(printf -- '%s\n' "${csv[@]}" | xsv select 1 | sort -u | xargs))
 >&2 echo "Publishing distros: ${distros[@]}"
 for distribution in ${distros[@]}; do
-	comps=($(printf -- '%s\n' "${csv[@]}" | xsv input -d \; | xsv search --select 1 "$distribution" | xsv select 2 | sort -u | xargs))
+	comps=($(printf -- '%s\n' "${csv[@]}" | xsv search --select 1 "$distribution" | xsv select 2 | sort -u | xargs))
 	>&2 echo "Publishing for $distribution the following components: ${comps[@]}"
 	printf -v components '%s,' "${comps[@]}"
 	repos=()
