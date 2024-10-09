@@ -30,7 +30,8 @@ inputs:
     description: |
       ID of the GPG public key to use for signing.
       Useful for definining a signing specific subkey.
-    required: true
+      Defaults to whatever GnuPG defaults to.
+    required: false
     default: ""
   gpg_private_key:
     description: Armored gpg private key to sign the repo with.
@@ -76,6 +77,7 @@ runs:
       with:
         gpg_private_key: "${{ inputs.gpg_private_key }}"
         passphrase: "${{ inputs.gpg_passphrase }}"
+        fingerprint: "${{ inputs.gpg_key_id }}"
     - name: Create repository
       shell: bash
       run: |
