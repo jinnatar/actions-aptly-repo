@@ -78,7 +78,13 @@ runs:
       shell: bash
       run: |
         echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
-    - name: Admire results
+    - name: Print repo tree
       shell: bash
       run: |
         tree "$HOME/.aptly/public"
+    - name: Publish artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: "${{ inputs.name }}-${{inputs.prefix}}-repo-artifacts"
+        path: "$HOME/.aptly/public"
+        if-no-files-found: error
