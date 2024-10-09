@@ -82,6 +82,9 @@ runs:
       shell: bash
       run: |
         echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
+    - name: Export public key
+      shell: bash
+      run: gpg --export --armor "${{ inputs.gpg_key_id }}" > ~/.aptly/public/GPG.key
     - name: Print repo tree
       shell: bash
       run: |
