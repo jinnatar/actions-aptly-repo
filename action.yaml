@@ -73,6 +73,7 @@ runs:
       shell: bash
       run: ubi -p BurntSushi/xsv -i "$HOME/bin/"
     - name: Import GPG key
+      id: gpg_import
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: "${{ inputs.gpg_private_key }}"
@@ -84,7 +85,7 @@ runs:
         echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
     - name: Export public key
       shell: bash
-      run: gpg --export --armor "${{ inputs.gpg_key_id }}" > ~/.aptly/public/GPG.key
+      run: gpg --export --armor "${{ steps.gpg_import.outputs.fingerprint }}" > ~/.aptly/public/GPG.key
     - name: Print repo tree
       shell: bash
       run: |
