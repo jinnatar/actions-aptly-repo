@@ -32,6 +32,14 @@ for repoline in "${csv[@]}"; do
 	echo "repodef: ${repoline}"
 done
 
+# Check column count
+columncount="$(printf -- '%s\n' "${csv[@]}" | xsv slice -i 0 | xsv flatten | wc -l)"
+
+if [[ "$columncount" != 4 ]]; then
+	>&2 echo "Wrong number of columns in repo definitions, forgot to escape arch list quoting?"
+	exit 1
+fi
+
 ## Create repos
 >&2 echo "Creating repos:"
 echo "# Repo config line examples" > "${project}.list"
