@@ -23,7 +23,7 @@ inputs:
       Fields are in order: distribution, category, architectures, filesystem glob of debs.
       The default thus creates a single distribution of "bookworm", category "stable" for amd64 of all debs in the current directory.
     required: true
-    default: bookworm,stable,"amd64",./*.deb
+    default: bookworm,stable,\"amd64\",./*.deb
   gpg_key_id:
     description: |
       ID of the GPG public key to use for signing.
