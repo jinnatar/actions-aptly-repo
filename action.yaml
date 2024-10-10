@@ -90,6 +90,7 @@ runs:
       env:
         GPG_KEY_ID: ${{ steps.gpg_import.outputs.fingerprint }}
     - name: Export public key
+      if: inputs.gpg_private_key != ''
       shell: bash
       run: gpg --export --armor "${{ steps.gpg_import.outputs.fingerprint }}" > ~/.aptly/public/GPG.key
     - name: Print repo tree
