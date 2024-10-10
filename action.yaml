@@ -34,11 +34,14 @@ inputs:
     required: false
     default: ""
   gpg_private_key:
-    description: Armored gpg private key to sign the repo with.
-    required: true
+    description: |
+      Armored gpg private key to sign the repo with.
+      If not provided, the repo will not be signed.
+    required: false
   gpg_passphrase:
-    description: The passphrase of the provided GPG key.
-    required: true
+    description: |
+      The passphrase of the provided GPG key.
+    required: false
 
   GITHUB_TOKEN:
     description: |
@@ -74,6 +77,7 @@ runs:
       run: ubi -p BurntSushi/xsv -i "$HOME/bin/"
     - name: Import GPG key
       id: gpg_import
+      if: inputs.gpg_private_key != ''
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: "${{ inputs.gpg_private_key }}"
@@ -83,7 +87,10 @@ runs:
       shell: bash
       run: |
         echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
+      env:
+        GPG_KEY_ID: ${{ steps.gpg_import.outputs.fingerprint }}
     - name: Export public key
+      if: inputs.gpg_private_key != ''
       shell: bash
       run: gpg --export --armor "${{ steps.gpg_import.outputs.fingerprint }}" > ~/.aptly/public/GPG.key
     - name: Print repo tree

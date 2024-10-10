@@ -64,6 +64,14 @@ done
 ## Publish repos per distribution
 distros=($(printf -- '%s\n' "${csv[@]}" | xsv select 1 | sort -u | xargs))
 >&2 echo "Publishing distros: ${distros[@]}"
+publish_options=(-multi-dist)
+
+if [[ "$GPG_KEY_ID" == "" ]]; then
+	echo "::warning title=The input gpg_private_key has not been defined or is empty.::\
+		Omitting gpg_private_key means the repo will NOT be signed and is not useful outside of local testing."
+	publish_options+=(-skip-signing)
+fi
+
 for distribution in ${distros[@]}; do
 	comps=($(printf -- '%s\n' "${csv[@]}" | xsv search --select 1 "$distribution" | xsv select 2 | sort -u | xargs))
 	>&2 echo "Publishing for $distribution the following components: ${comps[@]}"
@@ -75,7 +83,7 @@ for distribution in ${distros[@]}; do
 
 	set -x
 	aptly publish repo \
-		-multi-dist \
+		${publish_options[@]} \
 		-component="${components::-1}" \
 		-distribution="${distribution}" \
 		"${repos[@]}" \
