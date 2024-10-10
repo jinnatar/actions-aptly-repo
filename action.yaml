@@ -12,6 +12,10 @@ inputs:
     description: |
       "Short name of the project used as a slug to refer to your repo."
     required: true
+  artifact_name:
+    description: |
+      "Name of the generated repo snapshot artifact. The default is {name}-{prefix}-repo-artifacts"
+    required: false
   prefix:
     description: |
       Repo prefix in the published structure.
@@ -100,6 +104,6 @@ runs:
     - name: Publish artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "${{ inputs.name }}-${{inputs.prefix}}-repo-artifacts"
+        name: ${{ inputs.artifact_name != '' && inputs.artifact_name ||  format('{0}-{1}-repo-artifacts', inputs.name, inputs.prefix)  }}
         path: ~/.aptly/public
         if-no-files-found: error
