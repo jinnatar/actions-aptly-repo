@@ -68,7 +68,7 @@ publish_options=(-multi-dist)
 
 if [[ "$GPG_KEY_ID" == "" ]]; then
 	echo "::warning title=The input gpg_private_key has not been defined or is empty.::\
-		This means the repo will NOT be signed and is not useful outside of local testing."
+		Omitting gpg_private_key means the repo will NOT be signed and is not useful outside of local testing."
 	publish_options+=(-skip-signing)
 fi
 
