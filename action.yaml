@@ -77,7 +77,7 @@ runs:
       run: ubi -p BurntSushi/xsv -i "$HOME/bin/"
     - name: Import GPG key
       id: gpg_import
-      if: inputs.gpg_private_key != ""
+      if: inputs.gpg_private_key != ''
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: "${{ inputs.gpg_private_key }}"
