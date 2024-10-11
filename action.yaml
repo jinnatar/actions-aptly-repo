@@ -22,6 +22,15 @@ inputs:
       Relevant if you wish to separate say ubuntu & debian completely.
     required: true
     default: "."
+  repo_url:
+    description: |
+      Public facing URL where your repository snapshot will be published.
+      Cleanest if you don't include a final / in the URL, one will be added where required.
+  generate_repo_list:
+    description: |
+      If enabled and repo_url is also provided, a "$name.list" template will be created at the root of
+      your repository snapshot with example lines per distribution & category.
+    default: "true"
   repos:
     description: |
       Repository definitions to create. Provided as a comma separated csv.
@@ -93,10 +102,16 @@ runs:
         echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
       env:
         GPG_KEY_ID: ${{ steps.gpg_import.outputs.fingerprint }}
+        REPO_URL: ${{ inputs.repo_url }}
+        GENERATE_REPO_LIST: ${{ inputs.generate_repo_list }}
     - name: Export public key
       if: inputs.gpg_private_key != ''
       shell: bash
       run: gpg --export --armor "${{ steps.gpg_import.outputs.fingerprint }}" > ~/.aptly/public/GPG.key
+    - name: Include repo list example
+      if: ${{ inputs.repo_url != '' && inputs.generate_repo_list == 'true' }}
+      shell: bash
+      run: cp *.list ~/.aptly/public/
     - name: Print repo tree
       shell: bash
       run: |

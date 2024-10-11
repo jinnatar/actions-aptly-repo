@@ -4,12 +4,38 @@ set -eu
 
 project="${1?}"
 prefix="${2?}"
+prefix_print="$prefix"
+list_file_target="${project}.list"
 
+# Data we expect from GHA env but give defaults for here that disable the feature to ease development.
+# (GHA sets them to an empty value if not given instead of not setting them)
+REPO_URL="${REPO_URL:-}"
+GENERATE_REPO_LIST="${GENERATE_REPO_LIST:-"true"}"
+GPG_KEY_ID="${GPG_KEY_ID:-}"
+
+# Contract a no-prefix prefix for printing purposes
+if [[ "$(basename $prefix)" == "." ]]; then
+	prefix_print=""
+else
+	# Only add the URL to prefix divider slash if we have a prefix
+	prefix_print="/${prefix}"
+fi
+
+
+function repo_list_line(){
+	local distribution="${1?}"
+	local component="${2?}"
+	local archs="${3?}"
+
+	echo "# Example for enabling only the ${component} component on ${distribution}: " >> "$list_file_target"
+	echo "deb [arch=${archs} signed-by=/etc/apt/trusted.gpg.d/${project}.gpg] ${REPO_URL}${prefix_print} ${distribution} ${component}" >> "$list_file_target"
+}
+
+## Read the repodef csv from stdin
 readarray -t csv
 
-shopt -s extglob
-
 ## Canonicalize csv input
+shopt -s extglob
 # Strip whitespace
 csv=( "${csv[@]/#+([[:blank:]])/}" ) 
 csv=( "${csv[@]/%+([[:blank:]])/}" ) 
@@ -42,7 +68,9 @@ fi
 
 ## Create repos
 >&2 echo "Creating repos:"
-echo "# Repo config line examples" > "${project}.list"
+if [[ "$REPO_URL" != "" && "$GENERATE_REPO_LIST" == "true" ]]; then
+	echo "# You probably want to use only one of the examples below!" > "$list_file_target"
+fi
 for repoline in "${csv[@]}"; do
 	distribution=$(echo "$repoline" | xsv select 1)
 	component=$(echo "$repoline" | xsv select 2)
@@ -50,7 +78,6 @@ for repoline in "${csv[@]}"; do
 	debglob=$(echo "$repoline" | xsv select 4)
 	slug="${project}-${distribution}-${component}"
 
-	echo "deb [arch=${archs} signed-by=/etc/apt/trusted.gpg.d/${project}.gpg] https://repo.example.com/${prefix} ${distribution} ${component}" | tee -a "${project}.list"
 	set -x
 	aptly repo create \
 		-distribution="$distribution" \
@@ -59,6 +86,9 @@ for repoline in "${csv[@]}"; do
 		"$slug"
 	aptly repo add "$slug" $debglob
 	set +x
+	if [[ "$REPO_URL" != "" && "$GENERATE_REPO_LIST" == "true" ]]; then
+		repo_list_line "$distribution" "$component" "$archs"
+	fi
 done
 
 ## Publish repos per distribution
