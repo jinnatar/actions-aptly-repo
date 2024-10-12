@@ -26,19 +26,23 @@ inputs:
     description: |
       Public facing URL where your repository snapshot will be published.
       Cleanest if you don't include a final / in the URL, one will be added where required.
+    required: false
   generate_repo_list:
     description: |
       If enabled and repo_url is also provided, a "$name.list" template will be created at the root of
       your repository snapshot with example lines per distribution & category.
+    required: false
     default: "true"
   repos:
     description: |
       Repository definitions to create. Provided as a comma separated csv.
-      The architecture list should be quoted and comma separated.
-      Fields are in order: distribution, category, architectures, filesystem glob of debs.
-      The default thus creates a single distribution of "bookworm", category "stable" for amd64 of all debs in the current directory.
+      The architecture list should be quoted and comma separated. The quotes must be escaped.
+      Fields are in order:
+      distribution, category, architectures, import boolean, filesystem glob of debs.
+      The default thus creates a single distribution of:
+      "bookworm", category "stable" for amd64 of all debs in the current directory with no import.
     required: true
-    default: bookworm,stable,\"amd64\",./*.deb
+    default: bookworm,stable,false,\"amd64\",./*.deb
   gpg_key_id:
     description: |
       ID of the GPG public key to use for signing.
@@ -54,6 +58,23 @@ inputs:
   gpg_passphrase:
     description: |
       The passphrase of the provided GPG key.
+    required: false
+  gpg_export_name:
+    description: |
+      If signing is used the public key will be exported to the root of
+      the snapshot with this name. List examples will also refer to this name.
+      If customized, the suffix of the file should be either `.asc` or `.gpg`.
+      - `.asc` causes the export to be ASCII armored.
+      - `.gpg` does not use ASCII armoring, i.e. the key is exported "raw".
+      The default is to export as `$name.asc`
+    required: true
+    default: ""
+
+  import_gpg_key:
+    description: |
+      An additional GPG public key to import and trust.
+      Only useful if the repo definitions enable the import feature and
+      the mirror you're importing is not signed by the same private key.
     required: false
 
   GITHUB_TOKEN:
@@ -88,7 +109,7 @@ runs:
     - name: Install XSV
       shell: bash
       run: ubi -p BurntSushi/xsv -i "$HOME/bin/"
-    - name: Import GPG key
+    - name: Import GPG signing key
       id: gpg_import
       if: inputs.gpg_private_key != ''
       uses: crazy-max/ghaction-import-gpg@v6
@@ -96,6 +117,13 @@ runs:
         gpg_private_key: "${{ inputs.gpg_private_key }}"
         passphrase: "${{ inputs.gpg_passphrase }}"
         fingerprint: "${{ inputs.gpg_key_id }}"
+    - name: Import extra GPG public key
+      if: inputs.import_gpg_key != ''
+      shell: bash
+      env:
+        KEY_ID: ${{ inputs.import_gpg_key }}
+      run: |
+        echo "$KEY_ID" | gpg --import
     - name: Create repository
       shell: bash
       run: |
@@ -107,7 +135,10 @@ runs:
     - name: Export public key
       if: inputs.gpg_private_key != ''
       shell: bash
-      run: gpg --export --armor "${{ steps.gpg_import.outputs.fingerprint }}" > ~/.aptly/public/GPG.key
+      env:
+        GPG_EXPORT_NAME: ${{ inputs.gpg_export_name != '' && inputs.gpg_export_name || format('{0}.asc', inputs.name) }}
+        ARMOR: ${{ endsWith(inputs.gpg_export_name, '.asc') && '--armor' || ( inputs.gpg_export_name == '' && '--armor' || '' ) }}
+      run: gpg --export $ARMOR "${{ steps.gpg_import.outputs.fingerprint }}" > "$HOME/.aptly/public/$GPG_EXPORT_NAME"
     - name: Include repo list example
       if: ${{ inputs.repo_url != '' && inputs.generate_repo_list == 'true' }}
       shell: bash

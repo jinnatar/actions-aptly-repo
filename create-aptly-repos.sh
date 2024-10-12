@@ -21,7 +21,6 @@ else
 	prefix_print="/${prefix}"
 fi
 
-
 function repo_list_line(){
 	local distribution="${1?}"
 	local component="${2?}"
@@ -59,9 +58,9 @@ for repoline in "${csv[@]}"; do
 done
 
 # Check column count
-columncount="$(printf -- '%s\n' "${csv[@]}" | xsv slice -i 0 | xsv flatten | wc -l)"
+columncount="$(printf -- '%s\n' "${csv[@]}" | xsv slice --no-headers -i 0 | xsv flatten --no-headers | wc -l)"
 
-if [[ "$columncount" != 4 ]]; then
+if [[ "$columncount" != 5 ]]; then
 	>&2 echo "Wrong number of columns in repo definitions, forgot to escape arch list quoting?"
 	exit 1
 fi
@@ -75,7 +74,8 @@ for repoline in "${csv[@]}"; do
 	distribution=$(echo "$repoline" | xsv select 1)
 	component=$(echo "$repoline" | xsv select 2)
 	archs=$(echo "$repoline" | xsv select 3 | tr -d \")
-	debglob=$(echo "$repoline" | xsv select 4)
+	import=$(echo "$repoline" | xsv select 4)
+	debglob=$(echo "$repoline" | xsv select 5)
 	slug="${project}-${distribution}-${component}"
 
 	set -x
@@ -84,6 +84,24 @@ for repoline in "${csv[@]}"; do
 		-component="$component" \
 		-architectures="$archs" \
 		"$slug"
+
+	# Check if component is one to extend before we add new debs
+	if [[ "$REPO_URL" != "" && "$import" == "true" ]]; then
+		aptly mirror create \
+			-keyring=~/.gnupg/pubring.kbx \
+			"mirror-${slug}" \
+			"$REPO_URL" \
+			"$distribution" "$component"
+		aptly mirror update \
+			-keyring=~/.gnupg/pubring.kbx \
+			"mirror-${slug}"
+		aptly repo import \
+			"mirror-${slug}" \
+			"$slug" \
+			Name  # Wildcard to accept any package
+	fi
+
+	# Add new debs
 	aptly repo add "$slug" $debglob
 	set +x
 	if [[ "$REPO_URL" != "" && "$GENERATE_REPO_LIST" == "true" ]]; then
