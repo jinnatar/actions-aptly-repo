@@ -41,15 +41,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4  # Or otherwise make deb files available, say from an earlier build step's artifacts.
       - name: Create repo
-        uses: jinnatar/actions-aptly-repo@v1
+        uses: jinnatar/actions-aptly-repo@v2
         with:
           name: demo
           repos: |
-              noble,stable,\"amd64,arm64\",debs/stable-ubuntu-24.04-*-unknown-linux-gnu/*.deb
-              jammy,stable,\"amd64,arm64\",debs/stable-ubuntu-22.04-*-unknown-linux-gnu/*.deb
-              noble,nightly,\"amd64,arm64\",debs/nightly-ubuntu-24.04-*-unknown-linux-gnu/*.deb
-              bookworm,stable,\"amd64,arm64\",debs/stable-debian-12-*-unknown-linux-gnu/*.deb
-              bookworm,nightly,\"amd64,arm64\",debs/nightly-debian-12-*-unknown-linux-gnu/*.deb
+              noble,stable,\"amd64,arm64\",false,debs/stable-ubuntu-24.04-*-unknown-linux-gnu/*.deb
+              jammy,stable,\"amd64,arm64\",false,debs/stable-ubuntu-22.04-*-unknown-linux-gnu/*.deb
+              noble,nightly,\"amd64,arm64\",false,debs/nightly-ubuntu-24.04-*-unknown-linux-gnu/*.deb
+              bookworm,stable,\"amd64,arm64\",false,debs/stable-debian-12-*-unknown-linux-gnu/*.deb
+              bookworm,nightly,\"amd64,arm64\",false,debs/nightly-debian-12-*-unknown-linux-gnu/*.deb
           gpg_private_key: "${{ secrets.GPG_PRIVATE_KEY }}"
           gpg_passphrase: "${{ secrets.PASSPHRASE }}"
 ```
@@ -88,7 +88,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create repo
-        uses: jinnatar/actions-aptly-repo@v1
+        uses: jinnatar/actions-aptly-repo@v2
         with:
           name: demo
           repo_url: https://repo.example.com
