@@ -129,7 +129,7 @@ runs:
       if: inputs.gpg_private_key != ''
       shell: bash
       run: |
-        echo "gpg_export_name=${{ inputs.gpg_export_name != '' && inputs.gpg_export_name || format('{0}.asc', inputs.name) }}" >> "$GITHUB_OUTPUT"
+        echo "filename=${{ inputs.gpg_export_name != '' && inputs.gpg_export_name || format('{0}.asc', inputs.name) }}" >> "$GITHUB_OUTPUT"
         echo "armor=${{ endsWith(inputs.gpg_export_name, '.asc') && '--armor' || ( inputs.gpg_export_name == '' && '--armor' || '' ) }}" >> "$GITHUB_OUTPUT"
     - name: Create repository
       shell: bash
@@ -137,15 +137,15 @@ runs:
         echo "${{ inputs.repos }}" | create-aptly-repos.sh "${{ inputs.name }}" "${{ inputs.prefix }}"
       env:
         GPG_KEY_ID: ${{ steps.gpg_import.outputs.fingerprint }}
-        GPG_EXPORT_NAME: ${{ steps.gpg_export.gpg_export_name }}
+        GPG_EXPORT_NAME: ${{ steps.gpg_export.outputs.filename }}
         REPO_URL: ${{ inputs.repo_url }}
         GENERATE_REPO_LIST: ${{ inputs.generate_repo_list }}
     - name: Export public key
       if: inputs.gpg_private_key != ''
       shell: bash
       env:
-        GPG_EXPORT_NAME: ${{ steps.gpg_export.gpg_export_name }}
-        ARMOR: ${{ steps.gpg_export.armor }}
+        GPG_EXPORT_NAME: ${{ steps.gpg_export.outputs.filename }}
+        ARMOR: ${{ steps.gpg_export.outputs.armor }}
       run: gpg --export $ARMOR "${{ steps.gpg_import.outputs.fingerprint }}" > "$HOME/.aptly/public/$GPG_EXPORT_NAME"
     - name: Include repo list example
       if: ${{ inputs.repo_url != '' && inputs.generate_repo_list == 'true' }}
