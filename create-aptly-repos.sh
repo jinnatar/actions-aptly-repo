@@ -12,6 +12,7 @@ list_file_target="${project}.list"
 REPO_URL="${REPO_URL:-}"
 GENERATE_REPO_LIST="${GENERATE_REPO_LIST:-"true"}"
 GPG_KEY_ID="${GPG_KEY_ID:-}"
+GPG_EXPORT_NAME="${GPG_EXPORT_NAME:-}"
 
 # Contract a no-prefix prefix for printing purposes
 if [[ "$(basename $prefix)" == "." ]]; then
@@ -25,9 +26,14 @@ function repo_list_line(){
 	local distribution="${1?}"
 	local component="${2?}"
 	local archs="${3?}"
+	local signed_by=""
+
+	if [[ "$GPG_EXPORT_NAME" != "" ]]; then
+		signed_by="signed-by=/etc/apt/trusted.gpg.d/${GPG_EXPORT_NAME}"
+	fi
 
 	echo "# Example for enabling only the ${component} component on ${distribution}: " >> "$list_file_target"
-	echo "deb [arch=${archs} signed-by=/etc/apt/trusted.gpg.d/${project}.gpg] ${REPO_URL}${prefix_print} ${distribution} ${component}" >> "$list_file_target"
+	echo "deb [arch=${archs} ${signed_by}] ${REPO_URL}${prefix_print} ${distribution} ${component}" >> "$list_file_target"
 }
 
 ## Read the repodef csv from stdin
