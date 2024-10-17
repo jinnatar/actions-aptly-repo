@@ -130,7 +130,7 @@ runs:
       shell: bash
       run: |
         echo "gpg_export_name=${{ inputs.gpg_export_name != '' && inputs.gpg_export_name || format('{0}.asc', inputs.name) }}" >> "$GITHUB_OUTPUT"
-        echo "armor=${{ endsWith(inputs.gpg_export_name, '.asc') && '--armor' || ( inputs.gpg_export_name == '' && '--armor' || '' ) }}" >> "$GITHUB_TOKEN"
+        echo "armor=${{ endsWith(inputs.gpg_export_name, '.asc') && '--armor' || ( inputs.gpg_export_name == '' && '--armor' || '' ) }}" >> "$GITHUB_OUTPUT"
     - name: Create repository
       shell: bash
       run: |
