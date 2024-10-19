@@ -84,15 +84,16 @@ for repoline in "${csv[@]}"; do
 	debglob=$(echo "$repoline" | xsv select 5)
 	slug="${project}-${distribution}-${component}"
 
-	set -x
-	aptly repo create \
+	( set -x; aptly repo create \
 		-distribution="$distribution" \
 		-component="$component" \
 		-architectures="$archs" \
-		"$slug"
+		"$slug" )
 
 	# Check if component is one to extend before we add new debs
 	if [[ "$REPO_URL" != "" && "$import" == "true" ]]; then
+		>&2 echo "Import is on for $slug, creating & importing from mirror $REPO_URL"
+		set -x
 		aptly mirror create \
 			-keyring=~/.gnupg/pubring.kbx \
 			"mirror-${slug}" \
@@ -105,11 +106,25 @@ for repoline in "${csv[@]}"; do
 			"mirror-${slug}" \
 			"$slug" \
 			Name  # Wildcard to accept any package
+		set +x
 	fi
 
-	# Add new debs
-	aptly repo add "$slug" $debglob
-	set +x
+	repo_size="$(aptly repo show -json -with-packages "$slug" | jq .Packages | jq length)"
+	>&2 echo "Resolving glob '$debglob' to packages.."
+	# Add new debs, if we expect to find any
+	debs=($(compgen -G "$debglob" || echo ""))
+	if [[ "${#debs[@]}" -lt 1 ]]; then
+		>&2 echo "The glob '$debglob' did not match any files."
+		if [[ "$repo_size" -lt 1 ]]; then
+			>&2 echo "There was no previous import into the '$slug' repo and it's empty, refusing to continue with no packages!"
+			exit 1
+		fi
+
+	fi
+	for deb in "${debs[@]}"; do
+		>&2 echo "Matched deb: $deb"
+		( set -x; aptly repo add "$slug" "$deb" )
+	done
 	if [[ "$REPO_URL" != "" && "$GENERATE_REPO_LIST" == "true" ]]; then
 		repo_list_line "$distribution" "$component" "$archs"
 	fi
@@ -135,12 +150,10 @@ for distribution in ${distros[@]}; do
 		repos+=("${project}-${distribution}-${comp}")
 	done
 
-	set -x
-	aptly publish repo \
+	( set -x; aptly publish repo \
 		${publish_options[@]} \
 		-component="${components::-1}" \
 		-distribution="${distribution}" \
 		"${repos[@]}" \
-		"${prefix}"
-	set +x
+		"${prefix}" )
 done
